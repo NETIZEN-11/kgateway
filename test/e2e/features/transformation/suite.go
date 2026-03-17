@@ -746,14 +746,14 @@ func (s *testingSuite) TestGatewayWithTransformation() {
 			WithCurlOptions(
 				curl.WithRetries(5, 1, 30), // 5 retries, 1s base, 30s max
 			)
-		
+
 		// Try to get server info to verify admin API is ready
 		_, err := adminClient.GetServerInfo(s.Ctx)
 		g.Expect(err).NotTo(gomega.HaveOccurred(), "Envoy admin API not ready")
 	}).
 		WithContext(s.Ctx).
 		WithTimeout(time.Second*60). // Wait up to 60 seconds for admin API to be ready
-		WithPolling(time.Second*2). // Poll every 2 seconds
+		WithPolling(time.Second*2).  // Poll every 2 seconds
 		Should(gomega.Succeed(), "Envoy admin API did not become ready in time")
 
 	// Now make the actual assertions with dynamic module check
@@ -890,7 +890,7 @@ func (s *testingSuite) dynamicModuleAssertion(shouldBeLoaded bool) func(ctx cont
 		}).
 			WithContext(ctx).
 			WithTimeout(time.Second*30). // Reduced from 20s to 30s for more stability
-			WithPolling(time.Second*2). // Poll every 2 seconds instead of 1
+			WithPolling(time.Second*2).  // Poll every 2 seconds instead of 1
 			Should(gomega.Succeed(), "failed to get expected load of dynamic modules")
 	}
 }
