@@ -31,9 +31,7 @@ func (o UninstallOpts) flags() []string {
 	appendIfNonEmpty(o.KubeContext, "--kube-context")
 	appendIfNonEmpty(o.Namespace, "--namespace")
 
-	for _, extraArg := range o.ExtraArgs {
-		args = append(args, extraArg)
-	}
+	args = append(args, o.ExtraArgs...)
 
 	return args
 }

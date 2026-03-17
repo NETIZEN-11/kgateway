@@ -90,15 +90,7 @@ func translateGatewayHTTPRouteRulesUtil(
 			routesVisited,
 			delegatingParent,
 		)
-		for _, outputRoute := range outputRoutes {
-			// The above function will return a nil route if a matcher fails to apply plugins
-			// properly. This is a signal to the caller that the route should be dropped.
-			//		if outputRoute == nil {
-			//			continue
-			//		}
-
-			*outputs = append(*outputs, outputRoute)
-		}
+		*outputs = append(*outputs, outputRoutes...)
 	}
 }
 

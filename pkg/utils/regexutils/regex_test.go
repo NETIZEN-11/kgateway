@@ -18,8 +18,7 @@ var _ = Describe("Regex", func() {
 		// Expect(regex.GetGoogleRe2().GetMaxProgramSize()).To(BeNil())
 	})
 	It("should create regex with a specific program size", func() {
-		var number uint32
-		number = 123
+		var number uint32 = 123
 		regex := NewRegexWithProgramSize("foo", &number)
 		Expect(regex.GetRegex()).To(Equal("foo"))
 		Expect(regex.GetGoogleRe2().GetMaxProgramSize().GetValue()).To(Equal(number)) //nolint:staticcheck // GetGoogleRe2 and GetMaxProgramSize are deprecated

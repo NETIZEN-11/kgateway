@@ -61,9 +61,7 @@ func (o InstallOpts) flags() []string {
 	for _, valsFile := range o.ValuesFiles {
 		appendIfNonEmpty(valsFile, "--values")
 	}
-	for _, extraArg := range o.ExtraArgs {
-		args = append(args, extraArg)
-	}
+	args = append(args, o.ExtraArgs...)
 
 	return args
 }

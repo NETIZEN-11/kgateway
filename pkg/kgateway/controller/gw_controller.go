@@ -430,10 +430,7 @@ func getDesiredAddresses(gw *gwv1.Gateway, svc *corev1.Service) []gwv1.GatewaySt
 	}
 
 	for _, specAddr := range gw.Spec.Addresses {
-		addr := gwv1.GatewayStatusAddress{
-			Type:  specAddr.Type,
-			Value: specAddr.Value,
-		}
+		addr := gwv1.GatewayStatusAddress(specAddr)
 		if !seen.Has(addr) {
 			ret = append(ret, addr)
 		}

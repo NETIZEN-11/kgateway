@@ -182,9 +182,7 @@ func NewPodWrapperCollection(pods krt.Collection[*corev1.Pod], krtOptions krtuti
 		containerPorts := map[string][]corev1.ContainerPort{}
 		for _, container := range obj.Spec.Containers {
 			containerPorts[container.Name] = []corev1.ContainerPort{}
-			for _, port := range container.Ports {
-				containerPorts[container.Name] = append(containerPorts[container.Name], port)
-			}
+			containerPorts[container.Name] = append(containerPorts[container.Name], container.Ports...)
 		}
 
 		return &WrappedPod{
