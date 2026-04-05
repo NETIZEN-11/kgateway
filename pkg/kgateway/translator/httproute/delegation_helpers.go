@@ -129,7 +129,19 @@ func mergeParentChildRouteMatch(
 			Value: new(""),
 		}
 	}
-	child.Path.Value = new(path.Join(*parent.Path.Value, *child.Path.Value))
+
+	// Merge paths based on parent path type
+	parentPathType := ptr.Deref(parent.Path.Type, gwv1.PathMatchPathPrefix)
+	childPathType := ptr.Deref(child.Path.Type, gwv1.PathMatchPathPrefix)
+
+	if parentPathType == gwv1.PathMatchRegularExpression {
+		// Regex-aware path merging
+		child.Path.Value = new(mergeRegexPath(*parent.Path.Value, *child.Path.Value, childPathType))
+		child.Path.Type = ptr.To(gwv1.PathMatchRegularExpression)
+	} else {
+		// Standard path joining for PathPrefix and Exact types
+		child.Path.Value = new(path.Join(*parent.Path.Value, *child.Path.Value))
+	}
 
 	// Inherit parent and child headers and query parameters while augmenting the merge
 	// with additions specified on the child
@@ -140,6 +152,54 @@ func mergeParentChildRouteMatch(
 	if parent.Method != nil {
 		child.Method = new(*parent.Method)
 	}
+}
+
+// mergeRegexPath merges a parent regex path with a child path, handling regex-specific logic.
+// It removes trailing anchors from the parent, escapes the child path if needed, and
+// reconstructs a valid regex pattern.
+func mergeRegexPath(parentRegex, childPath string, childPathType gwv1.PathMatchType) string {
+	// Remove trailing $ anchor from parent regex if present
+	trimmedParent := strings.TrimSuffix(parentRegex, "$")
+
+	// Handle optional trailing groups like (?:/.*)?
+	// These need to be removed before appending the child path
+	if strings.HasSuffix(trimmedParent, "(?:/.*)?") {
+		trimmedParent = strings.TrimSuffix(trimmedParent, "(?:/.*)?")
+	} else if strings.HasSuffix(trimmedParent, "(?:.*)?") {
+		trimmedParent = strings.TrimSuffix(trimmedParent, "(?:.*)?")
+	}
+
+	// Escape child path based on its type
+	var escapedChild string
+	if childPathType == gwv1.PathMatchRegularExpression {
+		// Child is already a regex, use as-is but remove leading ^ and trailing $ if present
+		escapedChild = strings.TrimPrefix(childPath, "^")
+		escapedChild = strings.TrimSuffix(escapedChild, "$")
+	} else {
+		// Child is PathPrefix or Exact, escape special regex characters
+		escapedChild = escapeRegexSpecialChars(childPath)
+	}
+
+	// Ensure child path starts with / if not empty
+	if escapedChild != "" && !strings.HasPrefix(escapedChild, "/") {
+		escapedChild = "/" + escapedChild
+	}
+
+	// Construct the merged regex
+	mergedRegex := trimmedParent + escapedChild + "$"
+
+	return mergedRegex
+}
+
+// escapeRegexSpecialChars escapes special regex characters in a plain string path
+func escapeRegexSpecialChars(s string) string {
+	// Characters that need escaping in regex: . + * ? ^ $ ( ) [ ] { } | \
+	specialChars := []string{"\\", ".", "+", "*", "?", "^", "$", "(", ")", "[", "]", "{", "}", "|"}
+	result := s
+	for _, char := range specialChars {
+		result = strings.ReplaceAll(result, char, "\\"+char)
+	}
+	return result
 }
 
 // mergeHeaders merges parent and child header matches. If a header name is specified on both
