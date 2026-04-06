@@ -65,7 +65,7 @@ func TestMergeParentChildRouteMatch(t *testing.T) {
 					Value: ptr.To("/members"),
 				},
 			},
-			expectedPath: "^/teams/[^/]+/members$",
+			expectedPath: "^/teams/[^/]+/members(/.*)?$",
 			expectedType: gwv1.PathMatchRegularExpression,
 		},
 		{
@@ -82,7 +82,7 @@ func TestMergeParentChildRouteMatch(t *testing.T) {
 					Value: ptr.To("/members"),
 				},
 			},
-			expectedPath: "^/teams/[^/]+/members$",
+			expectedPath: "^/teams/[^/]+/members(/.*)?$",
 			expectedType: gwv1.PathMatchRegularExpression,
 		},
 		{
@@ -116,7 +116,7 @@ func TestMergeParentChildRouteMatch(t *testing.T) {
 					Value: ptr.To("/members/[0-9]+"),
 				},
 			},
-			expectedPath: "^/teams/[^/]+/members/[0-9]+$",
+			expectedPath: "^/teams/[^/]+(?:/members/[0-9]+)$",
 			expectedType: gwv1.PathMatchRegularExpression,
 		},
 		{
@@ -133,7 +133,7 @@ func TestMergeParentChildRouteMatch(t *testing.T) {
 					Value: ptr.To("/members"),
 				},
 			},
-			expectedPath: "^/teams/[^/]+/members$",
+			expectedPath: "^/teams/[^/]+/members(/.*)?$",
 			expectedType: gwv1.PathMatchRegularExpression,
 		},
 		{
@@ -150,7 +150,7 @@ func TestMergeParentChildRouteMatch(t *testing.T) {
 					Value: ptr.To("/v1.0"),
 				},
 			},
-			expectedPath: "^/api/v1\\.0$",
+			expectedPath: "^/api/v1\\.0(/.*)?$",
 			expectedType: gwv1.PathMatchRegularExpression,
 		},
 		{
@@ -201,7 +201,7 @@ func TestMergeParentChildRouteMatch(t *testing.T) {
 					Value: ptr.To("users"),
 				},
 			},
-			expectedPath: "^/api/users$",
+			expectedPath: "^/api/users(/.*)?$",
 			expectedType: gwv1.PathMatchRegularExpression,
 		},
 		{
@@ -381,42 +381,42 @@ func TestMergeRegexPath(t *testing.T) {
 			parentRegex:   "^/teams/[^/]+$",
 			childPath:     "/members",
 			childPathType: gwv1.PathMatchPathPrefix,
-			expected:      "^/teams/[^/]+/members$",
+			expected:      "^/teams/[^/]+/members(/.*)?$",
 		},
 		{
 			name:          "Regex with optional trailing group",
 			parentRegex:   "^/teams/[^/]+(?:/.*)?$",
 			childPath:     "/members",
 			childPathType: gwv1.PathMatchPathPrefix,
-			expected:      "^/teams/[^/]+/members$",
+			expected:      "^/teams/[^/]+/members(/.*)?$",
 		},
 		{
 			name:          "Regex without trailing anchor",
 			parentRegex:   "^/api/v[0-9]+",
 			childPath:     "/users",
 			childPathType: gwv1.PathMatchPathPrefix,
-			expected:      "^/api/v[0-9]+/users$",
+			expected:      "^/api/v[0-9]+/users(/.*)?$",
 		},
 		{
 			name:          "Child path with special characters",
 			parentRegex:   "^/api$",
 			childPath:     "/v1.0+test",
 			childPathType: gwv1.PathMatchPathPrefix,
-			expected:      "^/api/v1\\.0\\+test$",
+			expected:      "^/api/v1\\.0\\+test(/.*)?$",
 		},
 		{
 			name:          "Child is also regex",
 			parentRegex:   "^/teams/[^/]+$",
 			childPath:     "/members/[0-9]+",
 			childPathType: gwv1.PathMatchRegularExpression,
-			expected:      "^/teams/[^/]+/members/[0-9]+$",
+			expected:      "^/teams/[^/]+(?:/members/[0-9]+)$",
 		},
 		{
 			name:          "Child regex with both anchors",
 			parentRegex:   "^/api$",
 			childPath:     "^/v[0-9]+/users$",
 			childPathType: gwv1.PathMatchRegularExpression,
-			expected:      "^/api/v[0-9]+/users$",
+			expected:      "^/api(?:/v[0-9]+/users)$",
 		},
 		{
 			name:          "Empty child path",
@@ -430,14 +430,14 @@ func TestMergeRegexPath(t *testing.T) {
 			parentRegex:   "^/api$",
 			childPath:     "users",
 			childPathType: gwv1.PathMatchPathPrefix,
-			expected:      "^/api/users$",
+			expected:      "^/api/users(/.*)?$",
 		},
 		{
 			name:          "Complex regex pattern",
 			parentRegex:   "^/org/[a-z0-9-]+/projects/[^/]+$",
 			childPath:     "/issues",
 			childPathType: gwv1.PathMatchPathPrefix,
-			expected:      "^/org/[a-z0-9-]+/projects/[^/]+/issues$",
+			expected:      "^/org/[a-z0-9-]+/projects/[^/]+/issues(/.*)?$",
 		},
 	}
 
@@ -551,7 +551,7 @@ func TestMergeParentChildRouteMatch_EdgeCases(t *testing.T) {
 					Value: ptr.To("/users"),
 				},
 			},
-			expectedPath: "^/api/v[0-9]+/users$",
+			expectedPath: "^/api/v[0-9]+/users(/.*)?$",
 			expectedType: gwv1.PathMatchRegularExpression,
 		},
 		{
@@ -568,7 +568,7 @@ func TestMergeParentChildRouteMatch_EdgeCases(t *testing.T) {
 					Value: ptr.To("/projects/v2.0"),
 				},
 			},
-			expectedPath: "^/org/[a-zA-Z0-9_-]+/projects/v2\\.0$",
+			expectedPath: "^/org/[a-zA-Z0-9_-]+/projects/v2\\.0(/.*)?$",
 			expectedType: gwv1.PathMatchRegularExpression,
 		},
 		{
@@ -585,7 +585,7 @@ func TestMergeParentChildRouteMatch_EdgeCases(t *testing.T) {
 					Value: ptr.To("^/v[0-9]+/users$"),
 				},
 			},
-			expectedPath: "^/api/v[0-9]+/users$",
+			expectedPath: "^/api(?:/v[0-9]+/users)$",
 			expectedType: gwv1.PathMatchRegularExpression,
 		},
 		{
@@ -619,7 +619,7 @@ func TestMergeParentChildRouteMatch_EdgeCases(t *testing.T) {
 					Value: ptr.To("/members"),
 				},
 			},
-			expectedPath: "^/teams/(public|private)/[^/]+/members$",
+			expectedPath: "^/teams/(public|private)/[^/]+/members(/.*)?$",
 			expectedType: gwv1.PathMatchRegularExpression,
 		},
 		{
@@ -636,7 +636,7 @@ func TestMergeParentChildRouteMatch_EdgeCases(t *testing.T) {
 					Value: ptr.To("/path\\with\\backslash"),
 				},
 			},
-			expectedPath: "^/api/path\\\\with\\\\backslash$",
+			expectedPath: "^/api/path\\\\with\\\\backslash(/.*)?$",
 			expectedType: gwv1.PathMatchRegularExpression,
 		},
 	}
