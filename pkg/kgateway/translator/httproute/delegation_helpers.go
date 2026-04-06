@@ -130,17 +130,31 @@ func mergeParentChildRouteMatch(
 		}
 	}
 
-	// Merge paths based on parent path type
-	parentPathType := ptr.Deref(parent.Path.Type, gwv1.PathMatchPathPrefix)
-	childPathType := ptr.Deref(child.Path.Type, gwv1.PathMatchPathPrefix)
+	// Extract parent path information with nil checks
+	parentPathType := gwv1.PathMatchPathPrefix
+	parentPathValue := ""
+	if parent.Path != nil {
+		parentPathType = ptr.Deref(parent.Path.Type, gwv1.PathMatchPathPrefix)
+		if parent.Path.Value != nil {
+			parentPathValue = *parent.Path.Value
+		}
+	}
 
+	// Extract child path information with nil checks
+	childPathType := ptr.Deref(child.Path.Type, gwv1.PathMatchPathPrefix)
+	childPathValue := ""
+	if child.Path.Value != nil {
+		childPathValue = *child.Path.Value
+	}
+
+	// Merge paths based on parent path type
 	if parentPathType == gwv1.PathMatchRegularExpression {
 		// Regex-aware path merging
-		child.Path.Value = new(mergeRegexPath(*parent.Path.Value, *child.Path.Value, childPathType))
+		child.Path.Value = new(mergeRegexPath(parentPathValue, childPathValue, childPathType))
 		child.Path.Type = ptr.To(gwv1.PathMatchRegularExpression)
 	} else {
 		// Standard path joining for PathPrefix and Exact types
-		child.Path.Value = new(path.Join(*parent.Path.Value, *child.Path.Value))
+		child.Path.Value = new(path.Join(parentPathValue, childPathValue))
 	}
 
 	// Inherit parent and child headers and query parameters while augmenting the merge
